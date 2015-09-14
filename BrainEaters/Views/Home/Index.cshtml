@@ -6,6 +6,7 @@
 
 
 </div>
+<div id="messageText" style="position: absolute; left: 1050px"></div>
 <style>
     #renderMap {
         display: block;
@@ -20,10 +21,21 @@
 
 @section scripts{
     <script>
+        var timeLeft = {
+            seconds: 60
+        }
+
+        function food(x, y, time) {
+            this.x = x;
+            this.y = y;
+            this.timeBonus = time;
+        }
 
         var player = {
             _row: 1,
             _col: 1,
+            score: 0,
+
 
             get row() {
                 return player._row;
@@ -67,7 +79,7 @@
                 var newRow = value;
                 var newCol = dog._col;
                 if (map[newRow][newCol].type === "path") {
-                    $("#theDog").animate({ "top": value * 50 + "px" }, 0);
+                    $("#theDog").animate({ "top": value * 50 + "px" }, 200);
                     dog._row = value;
                 }
             },
@@ -81,39 +93,116 @@
                 var newRow = dog._row;
                 var newCol = value;
                 if (map[newRow][newCol].type === "path") {
-                    $("#theDog").animate({ "left": value * 50 + "px" }, 0);
+                    $("#theDog").animate({ "left": value * 50 + "px" }, 200);
                     dog._col = value;
                 }
             },
             get availableDirections() {
                 var dirs = [];
-                if (map[dog._row - 1][dog._col].type === "path" && player.row <= dog._row) {
+                if (map[dog._row - 1][dog._col].type === "path" && (dog2.row !== dog._row - 1 || dog.col !== dog2._col) && player.row <= dog._row) {
                     dirs.push(0, 0);
-                //} else if (Math.abs(player.col - dog._col) < 4) {
-                //    if (map[dog._row - 1][dog._col - 1].type === "path") { dirs.push(2, 2, 2) }
-                //    else if (map[dog._row - 1][dog._col + 1].type === "path") { dirs.push(3, 3) }
-                //    else if (map[dog._row - 1][dog._col - 2].type === "path") { dirs.push(2, 2, 2) }
-                //    else if (map[dog._row - 1][dog._col + 2].type === "path") { dirs.push(3, 3) }
-                //    else if (map[dog._row - 1][dog._col - 3].type === "path") { dirs.push(2, 2, 2) }
+                    //} else if (Math.abs(player.col - dog._col) < 4) {
+                    //    if (map[dog._row - 1][dog._col - 1].type === "path") { dirs.push(2, 2, 2) }
+                    //    else if (map[dog._row - 1][dog._col + 1].type === "path") { dirs.push(3, 3) }
+                    //    else if (map[dog._row - 1][dog._col - 2].type === "path") { dirs.push(2, 2, 2) }
+                    //    else if (map[dog._row - 1][dog._col + 2].type === "path") { dirs.push(3, 3) }
+                    //    else if (map[dog._row - 1][dog._col - 3].type === "path") { dirs.push(2, 2, 2) }
                 }
-                if (map[dog._row + 1][dog._col].type === "path" && player.row >= dog._row) {
+                if (map[dog._row + 1][dog._col].type === "path" && (dog2.row !== dog._row + 1 || dog2.col !== dog._col) && player.row >= dog._row) {
                     dirs.push(1, 1);
-                //} else if (Math.abs(player.col - dog._col) < 4) {
-                //    if (map[dog._row + 1][dog._col - 1].type === "path") { dirs.push(2, 2) }
-                //    else if (map[dog._row + 1][dog._col + 1].type === "path") { dirs.push(3, 3, 3) }
-                //    else if (map[dog._row + 1][dog._col - 2].type === "path") { dirs.push(2, 2) }
-                //    else if (map[dog._row + 1][dog._col + 2].type === "path") { dirs.push(3, 3, 3) }
-                //    else if (map[dog._row + 1][dog._col + 3].type === "path") { dirs.push(3, 3, 3) }
+                    //} else if (Math.abs(player.col - dog._col) < 4) {
+                    //    if (map[dog._row + 1][dog._col - 1].type === "path") { dirs.push(2, 2) }
+                    //    else if (map[dog._row + 1][dog._col + 1].type === "path") { dirs.push(3, 3, 3) }
+                    //    else if (map[dog._row + 1][dog._col - 2].type === "path") { dirs.push(2, 2) }
+                    //    else if (map[dog._row + 1][dog._col + 2].type === "path") { dirs.push(3, 3, 3) }
+                    //    else if (map[dog._row + 1][dog._col + 3].type === "path") { dirs.push(3, 3, 3) }
                 }
-                if (map[dog._row][dog._col - 1].type === "path" && player.col <= dog._col) {
+                if (map[dog._row][dog._col - 1].type === "path" && (dog2.row !== dog._row || dog2.col !== dog._col - 1) && player.col <= dog._col) {
                     dirs.push(2);
                 }
-                if (map[dog._row][dog._col + 1].type === "path" && player.col >= dog._col) {
+                if (map[dog._row][dog._col + 1].type === "path" && (dog2.row !== dog._row || dog2.col !== dog._col + 1) && player.col >= dog._col) {
                     dirs.push(3);
                 }
                 return dirs;
             }
         }
+
+        var dog2 = {
+            _row: 5,
+            _col: 13,
+
+            get row() {
+                return dog2._row;
+            },
+
+            set row(value) {
+                //if the row value plus col value is the same as a spot with wall, then do not allow that move.
+                var newRow = value;
+                var newCol = dog2._col;
+                if (map[newRow][newCol].type === "path") {
+                    $("#theDog2").animate({ "top": value * 50 + "px" }, 200);
+                    dog2._row = value;
+                }
+            },
+
+            get col() {
+                return dog2._col;
+            },
+
+            set col(value) {
+                //if the row value plus col value is the same as a spot with wall, then do not allow that move.
+                var newRow = dog2._row;
+                var newCol = value;
+                if (map[newRow][newCol].type === "path") {
+                    $("#theDog2").animate({ "left": value * 50 + "px" }, 200);
+                    dog2._col = value;
+                }
+            },
+            get availableDirections() {
+                var dirs = [];
+                if (map[dog2._row - 1][dog2._col].type === "path" && (dog.row !== dog2._row - 1 || dog.col !== dog2._col) && player.row <= dog2._row) {
+                    dirs.push(0, 0);
+                    //} else if (Math.abs(player.col - dog._col) < 4) {
+                    //    if (map[dog._row - 1][dog._col - 1].type === "path") { dirs.push(2, 2, 2) }
+                    //    else if (map[dog._row - 1][dog._col + 1].type === "path") { dirs.push(3, 3) }
+                    //    else if (map[dog._row - 1][dog._col - 2].type === "path") { dirs.push(2, 2, 2) }
+                    //    else if (map[dog._row - 1][dog._col + 2].type === "path") { dirs.push(3, 3) }
+                    //    else if (map[dog._row - 1][dog._col - 3].type === "path") { dirs.push(2, 2, 2) }
+                }
+                if (map[dog2._row + 1][dog2._col].type === "path" && (dog.row !== dog2._row + 1 || dog.col !== dog2._col) && player.row >= dog2._row) {
+                    dirs.push(1, 1);
+                    //} else if (Math.abs(player.col - dog._col) < 4) {
+                    //    if (map[dog._row + 1][dog._col - 1].type === "path") { dirs.push(2, 2) }
+                    //    else if (map[dog._row + 1][dog._col + 1].type === "path") { dirs.push(3, 3, 3) }
+                    //    else if (map[dog._row + 1][dog._col - 2].type === "path") { dirs.push(2, 2) }
+                    //    else if (map[dog._row + 1][dog._col + 2].type === "path") { dirs.push(3, 3, 3) }
+                    //    else if (map[dog._row + 1][dog._col + 3].type === "path") { dirs.push(3, 3, 3) }
+                }
+                if (map[dog2._row][dog2._col - 1].type === "path" && (dog.row !== dog2._row || dog.col !== dog2._col - 1) && player.col <= dog2._col) {
+                    dirs.push(2);
+                }
+                if (map[dog2._row][dog2._col + 1].type === "path" && (dog.row !== dog2._row || dog.col !== dog2._col + 1) && player.col >= dog2._col) {
+                    dirs.push(3);
+                }
+                return dirs;
+            }
+        }
+
+        var food = {
+            col: 13,
+            row: 13
+        }
+        var food2 = {
+            col: 9,
+            row: 9
+        }
+
+        var food3 = {
+            col: 7,
+            row: 7
+        }
+
+
 
         function mapBlock(type, row, col) {
             this.type = type;
@@ -121,11 +210,20 @@
             this.col = col;
         }
 
+        function map() {
+
+        }
+
+
+
+        //function createMap() {
+
         var map = [];
         var colData = [];
 
         for (var i = 0; i < 15; i++) {
-            map[i] = [];
+            Object.defineProperties(map,
+                map[i] = [])
         }
 
         //top and bottom fence lines
@@ -195,6 +293,21 @@
         //Generate the man now so he can walk on the path
         $("<img>").attr({ "id": "theMan", "src": "../Content/man.jpg", "style": "width: 50px; top: 50px; left: 50px; position: absolute;" }).appendTo("#renderMap");
         $("<img>").attr({ "id": "theDog", "src": "../Content/dog.jpg", "style": "width: 50px; top: 650px; left: 650px; position: absolute;" }).appendTo("#renderMap");
+        $("<img>").attr({ "id": "theDog2", "src": "../Content/dog.jpg", "style": "width: 50px; top: 250px; left: 650px; position: absolute;" }).appendTo("#renderMap");
+        //}
+
+        window.setInterval(function () {
+            var foodItems = food;
+            for (var items in food) {
+                foodItems++;
+            }
+
+            if (foodItems < 1) {
+                new foodItems(13, 13);
+                new foodItems(9, 9);
+                new foodItems(5, 5);
+            }
+        });
 
         window.setInterval(function () {
             var choices = dog.availableDirections;
@@ -213,11 +326,31 @@
                     dog.col++;
                     break;
             }
+
+            var choices = dog2.availableDirections;
+            var direction = parseInt(Math.random() * choices.length);
+            switch (choices[direction]) {
+                case 0:
+                    dog2.row--;
+                    break;
+                case 1:
+                    dog2.row++;
+                    break;
+                case 2:
+                    dog2.col--;
+                    break;
+                case 3:
+                    dog2.col++;
+                    break;
+            }
+
+            manIsCaught();
+
         }, 400);
 
         $(document).on("keydown", function (e) {
             if (e.keyCode >= 37 && e.keyCode <= 40) {
-                e.preventDefault;
+                e.preventDefault();
             }
 
             switch (e.keyCode) {
@@ -234,6 +367,26 @@
                     player.row++;
                     break;
             }
+            manIsCaught();
+            gotFood();
         });
+
+        function manIsCaught() {
+            if (((dog2.col === player.col) && (dog2.row === player.row)) || ((dog.col === player.col) && (dog.row === player.row))) {
+                $("<p>").text("You have been caught by the dogs.  You must now take them for a walk!").appendTo("#messageText");
+            }
+        }
+
+        function gotFood() {
+            if (food.col === player.col && food.row === player.row) {
+                $("<p>").text("You got a piece of bread.  Whoopie.").appendTo("#messageText");
+            } else if (food2.col === player.col && food2.row === player.row){
+                $("<p>").text("You got a hot dog.  Yay!").appendTo("#messageText");
+            } else if (food3.col === player.col && food3.row === player.row) {
+                $("<p>").text("You got the steak.  Hooray!").appendTo("#messageText");
+            }
+        }
+
+        //createMap();
     </script>
 }
